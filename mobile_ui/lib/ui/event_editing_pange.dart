@@ -3,6 +3,7 @@ import 'package:mobile_ui/model/event.dart';
 import 'package:mobile_ui/provider/event_provider.dart';
 import 'package:mobile_ui/utils/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 
 class EventEditingPage extends StatefulWidget {
@@ -93,12 +94,12 @@ class _EventEditingPageState extends State<EventEditingPage> {
   );
   Widget buildDateTimePickers() => Column(
     children: [
-      buildForm(),
+      buildFrom(),
       buildTo(),
     ],
   );
   
-  Widget buildForm() => buildHeader(
+  Widget buildFrom() => buildHeader(
     header: 'FROM',
     child: Row(
       children: [
@@ -220,12 +221,14 @@ class _EventEditingPageState extends State<EventEditingPage> {
   Future saveForm() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid){
+      var id = Uuid();
       final event = Event(
+        id:id.v4(),
         title: titleController.text,  
         from: fromDate, 
         to: toDate,
         description: "Description",
-        isAllDay: false
+
         );
       final isEditing = widget.event != null;
       final provider = Provider.of<EventProvider>(context, listen: false);
@@ -234,8 +237,9 @@ class _EventEditingPageState extends State<EventEditingPage> {
         Navigator.of(context).pop();
       }else{
         provider.addEvenet(event);
+        Navigator.of(context).pop();
       }
-      Navigator.of(context).pop();
+      
     }
   }
 }

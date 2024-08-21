@@ -17,8 +17,8 @@ class EventViewingPage extends StatelessWidget {
   Widget buildDateTime(Event event){
     return Column(
       children: [
-        buildDate(event.isAllDay ? 'All-day' : 'From', event.from),
-        if(!event.isAllDay) buildDate('To', event.to),
+        buildDate('From', event.from),
+        buildDate('To', event.to),
       ],
     );
   }

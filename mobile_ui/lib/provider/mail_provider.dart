@@ -29,9 +29,8 @@ class MailProvider extends ChangeNotifier{
 
   
 
-  void addMail(String subject, String content, String to, String cc, String bcc, DateTime dateAndTimeSend, DateTime dateAndTimeReminder){
-    var id = Uuid();
-    final mail = Mail(subject: subject, content: content, userEmail: _userEmail, userPassword: _userPassword, to: to, dateAndTimeSend: dateAndTimeSend, cc: cc, bcc: bcc, id: id.v4(), dateAndTimeReminder: dateAndTimeReminder);
+  void addMail(Mail mail){
+    
     _mails.add(mail);
     notifyListeners();
   }

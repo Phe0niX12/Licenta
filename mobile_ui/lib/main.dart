@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/provider/event_provider.dart';
+import 'package:mobile_ui/provider/mail_provider.dart';
 import 'package:mobile_ui/ui/main_page.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    
+    const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -13,8 +16,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) =>
-    ChangeNotifierProvider( 
-      create: (context) =>EventProvider() ,
+    MultiProvider( 
+      providers: [ChangeNotifierProvider(create: (context) =>EventProvider(),),
+                  ChangeNotifierProvider(create: (context) =>MailProvider(),)
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Calendar App",

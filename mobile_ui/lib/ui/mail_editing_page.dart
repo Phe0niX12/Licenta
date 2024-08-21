@@ -1,6 +1,10 @@
+import 'dart:math';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/model/mail.dart';
 import 'package:mobile_ui/ui/event_editing_pange.dart';
+import 'package:mobile_ui/utils/utils.dart';
 import 'package:mobile_ui/widget/login_widget.dart';
 
 class MailEditingPage extends StatefulWidget {
@@ -24,6 +28,7 @@ class _MailEditingPageState extends State<MailEditingPage> {
   final toController = TextEditingController();
   final ccController = TextEditingController();
   final bccController = TextEditingController();
+  var id;
 
   @override
   void initState(){
@@ -31,6 +36,7 @@ class _MailEditingPageState extends State<MailEditingPage> {
     if(widget.mail == null){
       dateAndTimeSend = DateTime.now();
       dateAndTimeReminder = DateTime.now().add(Duration(days: 1));
+      id = '1';
     }else{
       final mail = widget.mail!;
       subjectController.text = mail.subject;
@@ -40,6 +46,9 @@ class _MailEditingPageState extends State<MailEditingPage> {
       toController.text = mail.to;
       ccController.text = mail.cc;
       bccController.text = mail.bcc;
+      dateAndTimeReminder = mail.dateAndTimeReminder;
+      dateAndTimeSend = mail.dateAndTimeSend;
+      id = mail.id;
     }
   }
 
@@ -60,17 +69,32 @@ class _MailEditingPageState extends State<MailEditingPage> {
         leading: CloseButton(),
         actions: buildEditingActions(),
         ),
-      body: Placeholder(),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: buildForm(),
+          ),
+      ),
     );
   }
 
    List<Widget> buildEditingActions() =>[
     ElevatedButton.icon( 
       onPressed: () {
+        if(_formKey.currentState!.validate()){
         showModalBottomSheet(context: context,
-        builder: (context) => LoginWidget()
-        ); 
-        },
+        builder: (context)  {
+          if(widget.mail != null){
+            return LoginMailWidget(mail:widget.mail, to:toController.text, cc: ccController.text, bcc: bccController.text, subject: subjectController.text, content: contentController.text, dateAndTimeSend: dateAndTimeSend,dateAndTimeReminder: dateAndTimeReminder,id:id);
+          }else{
+            return  LoginMailWidget(to:toController.text, cc: ccController.text, bcc: bccController.text, subject: subjectController.text, content: contentController.text, dateAndTimeSend: dateAndTimeSend,dateAndTimeReminder: dateAndTimeReminder,id:id);
+          }
+          }
+        ).then((_) => Navigator.of(context).pop()); 
+        
+        }
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.transparent,
         shadowColor: Colors.transparent
@@ -79,18 +103,180 @@ class _MailEditingPageState extends State<MailEditingPage> {
       label: Text("Save")    
     ),
   ];
+  
+  Widget buildForm() => ListView(
+    children: [
+      TextFormField(
+        controller: toController,
+        decoration: InputDecoration(labelText: 'To'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a recipient';
+          }
+          return null;
+        },
+      ),
+      TextFormField(
+        controller: ccController,
+        decoration: InputDecoration(labelText: 'CC'),
+      ),
+      TextFormField(
+        controller: bccController,
+        decoration: InputDecoration(labelText: 'BCC'),
+      ),
+      TextFormField(
+        controller: subjectController,
+        decoration: InputDecoration(labelText: 'Subject'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a subject';
+          }
+          return null;
+        },
+      ),
+      TextFormField(
+        controller: contentController,
+        decoration: InputDecoration(labelText: 'Content'),
+        maxLines: 5,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter content for the email';
+          }
+          return null;
+        },
+      ),
+      SizedBox(height: 24,),
+      buildDateAndTimePickers()
+    ],
+  );
+  
+  
+  
+  Widget buildDateAndTimePickers() => Column(
+    children: [
+      buildSend(),
+      buildReminder()
+    ],
+  );
+
+  Widget buildSend() => buidlHeader(
+    header:'SendAt',
+    child: Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: 
+            buildDropDownField(
+              text: Utils.toDate(dateAndTimeSend),
+              onClicked: () =>pickSendDateTime(pickDate: true),
+            )
+        ),
+        Expanded(
+          child:
+            buildDropDownField(
+              text: Utils.toTime(dateAndTimeSend),
+              onClicked: () => pickSendDateTime(pickDate: false),
+            )
+            
+        )
+      ],
+      )
+  );
+
+  Widget buildReminder() => buidlHeader(
+    header: 'ReminderAt', 
+    child: Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child:
+            buildDropDownField(
+              text: Utils.toDate(dateAndTimeReminder),
+              onClicked:() => pickReminderDateTime(pickDate: true),
+            )
+            
+        ),
+        Expanded(
+          child:
+            buildDropDownField(
+              text: Utils.toTime(dateAndTimeReminder),
+              onClicked: () => pickReminderDateTime(pickDate: false),
+            )
+            
+        )
+        
+      ],
+    )
+    );
 
 
-  // Future saveForm() async{
-  //   final isValid = _formKey.currentState!.validate();
-  //   if(isValid){
-  //     final mail = Mail(
-  //       bcc: bccController.text,
-  //       cc: ccController.text,
-  //       subject: subjectController.text,
-  //       content: contentController.text,
-  //       userEmail: 
-  //       )
-  //   }
-  // }
+
+
+  
+  buildDropDownField({required String text, required VoidCallback onClicked}) =>
+  ListTile(
+    title: Text(text),
+    trailing: Icon(Icons.arrow_drop_down),
+    onTap: onClicked,
+  );
+  
+  buidlHeader({required String header, required Widget child}) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(header, style: TextStyle(fontWeight: FontWeight.bold),),
+      child
+    ],
+  );
+  
+  Future pickSendDateTime({required bool pickDate}) async{
+    final date = await pickDateTime(dateAndTimeSend, pickDate:pickDate);
+    if(date == null) return;
+
+    if(date.isAfter(dateAndTimeReminder)){
+      dateAndTimeReminder = DateTime(date.year, date.month, date.day);
+    }
+    setState(() {
+      dateAndTimeSend = date; 
+    });
+  }
+  
+  
+  Future<DateTime?> pickDateTime(DateTime initialDate, {required bool pickDate, DateTime? firstDate}) async{
+    if (pickDate){
+      final date = await showDatePicker(
+        context: context, 
+        initialDate: initialDate, 
+        firstDate: firstDate ?? DateTime(2015,8),
+        lastDate: DateTime(2101),
+        );
+
+      if(date == null) return null;
+      
+      final time = Duration(hours: initialDate.hour, minutes: initialDate.minute, seconds: initialDate.second);
+
+      return date.add(time);
+
+    }else{
+      final timeOfDay = await showTimePicker(
+        context: context, 
+        initialTime: TimeOfDay.fromDateTime(initialDate)
+        );
+       if(timeOfDay == null) return null;
+
+      final date = DateTime(initialDate.year, initialDate.month, initialDate.day);
+      final time = Duration(hours:  timeOfDay.hour, minutes: timeOfDay.minute);
+      return date.add(time);
+    }
+  }
+  
+  Future pickReminderDateTime({required bool pickDate}) async{
+    final date = await pickDateTime(dateAndTimeReminder, pickDate:pickDate, firstDate: pickDate? dateAndTimeSend: null);
+    if (date == null) return;
+
+    setState(() => dateAndTimeReminder = date);
+  }
+  
+  
+  
+  
 }

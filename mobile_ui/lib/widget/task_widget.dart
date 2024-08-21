@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_ui/model/event_data_source.dart';
+import 'package:mobile_ui/model/event.dart';
+import 'package:mobile_ui/model/calendar_data_source_extended.dart.dart';
+import 'package:mobile_ui/model/mail.dart';
 import 'package:mobile_ui/provider/event_provider.dart';
+import 'package:mobile_ui/provider/mail_provider.dart';
 import 'package:mobile_ui/ui/event_viewing_page.dart';
+import 'package:mobile_ui/ui/mail_viewing_page.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -11,71 +15,118 @@ class TaskWidget extends StatefulWidget {
   State<TaskWidget> createState() => _TaskWidgetState();
 }
 
+
 class _TaskWidgetState extends State<TaskWidget> {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<EventProvider>(context);
-    final selectedEvents = provider.eventsOfSelectedDate;
+    final providerEvents = Provider.of<EventProvider>(context);
+    final providerMails = Provider.of<MailProvider>(context, listen: false);
+    final selectedMails = providerMails.mailsOfSelectedDate;
+    final selectedEvents = providerEvents.eventsOfSelectedDate;
 
-    if (selectedEvents.isEmpty) {
+    final allItems = [...providerMails.mails, ...providerEvents.events];
+    if (selectedEvents.isEmpty && selectedMails.isEmpty) {
       return Center(
         child: Text(
           'No events found!',
-          style: TextStyle(color: Colors.black, fontSize: 24),
+          style: TextStyle(color: Colors.grey[700], fontSize: 24),
         ),
       );
     }
 
     Widget appointmentBuilder(
         BuildContext context, CalendarAppointmentDetails details) {
-      final event = details.appointments.first;
-
-      return Container(
+      final appointment = details.appointments.first;
+      if (appointment is Event) {
+        return Container(
           width: details.bounds.width,
           height: details.bounds.height,
           decoration: BoxDecoration(
-            color: event.backgroundColor.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12)
+            color: appointment.backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                blurRadius: 5,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: Center(
-              child: Text(
-                event.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.purpleAccent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-          )
-      );
+            child: Text(
+              appointment.getTitle(),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      } else {
+        return Container(
+          width: details.bounds.width,
+          height: details.bounds.height,
+          decoration: BoxDecoration(
+            color: Colors.blueAccent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                blurRadius: 5,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              appointment.getTitle(),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      }
     }
 
     return SfCalendarTheme(
       data: SfCalendarThemeData(
         timeTextStyle: TextStyle(
           fontSize: 16,
-          color: Colors.purpleAccent
-        )
+          color: Colors.deepPurple[700],
+        ),
       ),
       child: SfCalendar(
         view: CalendarView.timelineDay,
-        dataSource: EventDataSource(provider.events),
-        initialDisplayDate: provider.selectedDate,
+        dataSource: CalendarDataSourceExtended(allItems),
+        initialDisplayDate: providerEvents.selectedDate,
         appointmentBuilder: appointmentBuilder,
         headerHeight: 0,
-        todayHighlightColor: Colors.purpleAccent,
+        todayHighlightColor: Colors.deepPurpleAccent,
         selectionDecoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.3)
+          color: Colors.deepPurple.withOpacity(0.3),
+          border: Border.all(color: Colors.deepPurpleAccent, width: 2),
         ),
         onTap: (details) {
-          if(details.appointments == null) return;
+          if (details.appointments == null) return;
+          if (details.appointments!.first is Mail){
+            final mail = details.appointments!.first;
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => MailViewingPage(mail:mail)
+              ));
+          }else{
+            final event = details.appointments!.first;
 
-          final event = details.appointments!.first;
-
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => EventViewingPage(event:event)));
-
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => EventViewingPage(event: event)));
+          }
         },
       ),
     );

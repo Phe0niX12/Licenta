@@ -34,14 +34,35 @@ class EventViewingPage extends StatelessWidget {
       children: <Widget>[
         buildDateTime(event),
         SizedBox(height: 32),
-        Text(
-          event.title,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Text(
+              'title:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 8),
+            Text(
+              event.title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+            )
+          ]
         ),
         const SizedBox(height: 24,),
-        Text(
-          event.description,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+        Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              'Description:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 8),
+            Text(
+              event.description,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
+            )
+          ]
         )
       ],
     ),

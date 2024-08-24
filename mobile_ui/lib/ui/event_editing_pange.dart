@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/model/event.dart';
 import 'package:mobile_ui/provider/event_provider.dart';
+import 'package:mobile_ui/provider/user_provider.dart';
 import 'package:mobile_ui/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,8 @@ class _EventEditingPageState extends State<EventEditingPage> {
   late DateTime fromDate;
   late DateTime toDate;
   final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+
 
   @override
   void initState(){
@@ -35,6 +38,7 @@ class _EventEditingPageState extends State<EventEditingPage> {
     }else{
       final event = widget.event!;
       titleController.text = event.title;
+      descriptionController.text = event.description;
       fromDate = event.from;
       toDate = event.to;
     }
@@ -44,6 +48,7 @@ class _EventEditingPageState extends State<EventEditingPage> {
   void dispose(){
     super.dispose();
     titleController.dispose();
+    descriptionController.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -62,6 +67,8 @@ class _EventEditingPageState extends State<EventEditingPage> {
               buildTitle(),
               SizedBox(height: 12,),
               buildDateTimePickers(),
+              SizedBox(height: 12,),
+              buildDetails()
             ],
           )
         )
@@ -92,6 +99,8 @@ class _EventEditingPageState extends State<EventEditingPage> {
         title != null && title.isEmpty ? 'Title cannot be empty' : null,
     controller: titleController,
   );
+
+
   Widget buildDateTimePickers() => Column(
     children: [
       buildFrom(),
@@ -221,26 +230,52 @@ class _EventEditingPageState extends State<EventEditingPage> {
   Future saveForm() async {
     final isValid = _formKey.currentState!.validate();
     if (isValid){
+      final authProvider = Provider.of<UserProvider>(context, listen: false);
+      final idUser = authProvider.userId;
       var id = Uuid();
-      final event = Event(
+      
+      
+      final isEditing = widget.event != null;
+      final provider = Provider.of<EventProvider>(context, listen: false);
+      if(isEditing){
+        final event = Event(
+        id:widget.event!.id,
+        title: titleController.text,  
+        from: fromDate, 
+        to: toDate,
+        description: descriptionController.text,
+        idUser: idUser!,
+        isSynced: true,
+        );
+        provider.editEvent(event, widget.event!);
+        Navigator.of(context).pop();
+      }else{
+        final event = Event(
         id:id.v4(),
         title: titleController.text,  
         from: fromDate, 
         to: toDate,
-        description: "Description",
-
+        description: descriptionController.text,
+        idUser: idUser!,
         );
-      final isEditing = widget.event != null;
-      final provider = Provider.of<EventProvider>(context, listen: false);
-      if(isEditing){
-        provider.editEvent(event, widget.event!);
-        Navigator.of(context).pop();
-      }else{
         provider.addEvenet(event);
         Navigator.of(context).pop();
       }
       
     }
   }
+  
+  Widget buildDetails() => TextFormField(
+    style: TextStyle(fontSize: 24),
+    decoration: InputDecoration(
+      border: UnderlineInputBorder(),
+      hintText: "Add Description",
+    ),
+    maxLines: 5,
+    onFieldSubmitted: (_) => saveForm(),
+    validator: (description) =>
+        description != null && description.isEmpty ? 'Title cannot be empty' : null,
+    controller: descriptionController,
+  );
 }
 

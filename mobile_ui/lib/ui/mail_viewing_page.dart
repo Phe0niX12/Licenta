@@ -132,6 +132,7 @@ class MailViewingPage extends StatelessWidget {
           final provider = Provider.of<MailProvider>(context, listen: false);
           provider.deleteMail(mail);
           Navigator.of(context).pop();
+          Navigator.of(context).pop();
         },
         icon: Icon(Icons.delete)
       )

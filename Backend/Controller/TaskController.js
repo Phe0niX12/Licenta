@@ -4,7 +4,9 @@ const {v4:uuidv4} = require('uuid')
 
 const getAllTasksOfUser = async(req,res) =>{
     try{
-    const userId = req.userid;
+    
+    const userId = req.user.id;
+
     const tasks = await Tasks.findAll({
         where:{
             UserId:userId
@@ -26,14 +28,14 @@ const getAllTasksOfUser = async(req,res) =>{
 
 const createTask = async(req,res)=>{
     try{
-        const id = uuidv4();
-        const {name,description,reminderDateTime} = req.body;
-        const userid = req.userid
-        const newTask = {id:id, name:name,description:description,reminderDateTime:reminderDateTime, UserId:userid};
-        console.log(newTask);
+
+        const {id,title,description} = req.body;
+        const userid = req.user.id;
+        const newTask = {id:id, name:title,description:description, UserId:userid};  
         const task = await Tasks.create(newTask);
-        const username = req.username
-        return res.status(200).json({task: task, message:`Task added succesfully to user ${username}`});
+        
+        
+        return res.status(200).send({task: task, message:`Task added succesfully`});
         
     }catch(err){
         return res.status(500).send({err, message: 'Unexpected error while creating a task'});
@@ -43,14 +45,16 @@ const createTask = async(req,res)=>{
 const updateTask = async(req,res) =>{
     try{
         const id = req.params.id
-        const {name, description,reminderDateTime} = req.body;
-        const updateTask = {name:name, description:description,reminderDateTime:reminderDateTime};
+        const {title, description} = req.body;
+        
+        const updateTask = {name:title, description:description};
         const task = await Tasks.findByPk(id);
-
+        
         if(!task){
             res.status(404).send({task:task, message: `Task with id ${id} not found`});
         }
-        await task.update(updateTask)
+        await task.update(updateTask);
+        
         return res.status(200).send({task, message:'Task updated succesfully'});
     }catch(err){
         res.status(400).send({err,message:'Unexpected error at update task'});
@@ -76,10 +80,10 @@ const deleteTask = async(req,res) =>{
         const id = req.params.id
         const result = await Tasks.findByPk(id);
         if(!result){
-            res.status(404).send({message: `Task with id ${id} not found`});
+            return res.status(404).send({message: `Task with id ${id} not found`});
         }
         await result.destroy();
-        res.status(200).send({message: 'Task deleted succesfully'});
+        return res.status(200).send({message: 'Task deleted succesfully'});
     }catch(err){
         return res.status(400).send({err,message:'Unexpected error at deleting a task'})
     }

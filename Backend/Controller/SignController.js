@@ -1,6 +1,7 @@
 const {User} = require('../Models/SequlizerModel')
 const bcrypt = require('bcrypt')
-const {v4:uuidv4} = require('uuid')
+const jwt = require('jsonwebtoken');
+require("dotenv").config;
 const sign_in = async(req, res) =>{
     try{
         const {password, email} = req.body;
@@ -17,9 +18,14 @@ const sign_in = async(req, res) =>{
         if(!passwordValid){
             return res.status(402).send('Incorrect email or password');
         }
+
+        const token = jwt.sign({id:user.id},process.env.SECRET_TOKEN_KEY, {expiresIn:"1d"});
+        res.setHeader('Authorization', `Bearer ${token}`);
+
         res.send({
             username:user.username,
-            email:user.email
+            email:user.email,
+            idUser:user.id,
         })
     }catch(e){
         console.log(e);
@@ -29,11 +35,11 @@ const sign_in = async(req, res) =>{
 
 const sign_up = async(req,res) =>{
     try{
-        const id = uuidv4();
-        const {username,password, email} = req.body;
+        
+        const {id,username,password, email} = req.body;
         const userExists = await User.findOne({
             where:{
-                email:email,
+                id:id,
             }
         });
         if(userExists){
@@ -45,6 +51,7 @@ const sign_up = async(req,res) =>{
             password: await bcrypt.hash(password,15),
             email:email
         });
+        
         return res.status(200).send('Registration successful')
     }catch(err){
         console.log(err);
@@ -52,25 +59,30 @@ const sign_up = async(req,res) =>{
     }
 }
 
-const authenticate = async(req,res,next) =>{
-    try{
-        const email = req.headers.authorization
+const authenticate = (req, res, next) => {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
         
-        const user = await User.findOne({
-            where:{
-                email:email
+        console.log(1);
+
+        // Verify token
+        jwt.verify(token,process.env.SECRET_TOKEN_KEY, (err, decoded) => {
+            if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    
+                    return res.status(401).send('Token has expired');
+                }
+                
+                return res.status(401).send('Invalid token');
             }
-        })
-        
-        if(!user){
-            return res.status(404).send('No account with this email was found');
-        }
-        req.userid = user.id
-        req.username =user.username
-        next();
-    }catch(err){
-        
-        return res.status(500).send('Unexpected error at authentification')
+
+            // Attach user info to request object
+            req.user = decoded;
+            next();
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send('Unexpected error during authentication');
     }
-}
+};
 module.exports = {sign_in,sign_up,authenticate};

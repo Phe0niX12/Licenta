@@ -23,7 +23,7 @@ class CalendarWidget extends StatelessWidget {
       dataSource: CalendarDataSourceExtended(allItems),
       onLongPress: (details) {
         final providerEvents = Provider.of<EventProvider>(context, listen: false);
-        final providerMails = Provider.of<MailProvider>(context,listen: false);
+        final providerMails = Provider.of<MailProvider>(context, listen: false);
         providerEvents.setDate(details.date!);
         providerMails.setDate(details.date!);
         showModalBottomSheet(

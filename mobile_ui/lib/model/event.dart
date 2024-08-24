@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/model/calendar_item.dart';
 import 'package:uuid/uuid.dart';
@@ -10,6 +12,10 @@ class Event implements CalendarItem{
   final DateTime to;
   final Color backgroundColor;
   final String id;
+  final String idUser;
+  bool isSynced;
+  bool isDelete;
+  bool isUpdated;
 
   Event({
     required this.id,
@@ -17,8 +23,11 @@ class Event implements CalendarItem{
     required this.description,
     required this.from, 
     required this.to, 
+    required this.idUser,
     this.backgroundColor = const Color.fromARGB(255, 135, 3, 3),
-
+    this.isSynced = false,
+    this.isDelete = false,
+    this.isUpdated = false,
      });
      
   @override
@@ -40,6 +49,8 @@ class Event implements CalendarItem{
     return this.backgroundColor;
   }
 
+  
+
   Map<String, dynamic> toMap() {
     
     return {
@@ -48,7 +59,9 @@ class Event implements CalendarItem{
       'description': description,
       'from': from.toIso8601String(),
       'to': to.toIso8601String(),
-      'backgroundColor': backgroundColor.value,
+      'idUser': idUser,
+      'isSynced': isSynced ? 1 : 0,
+      'isDelete': isDelete? 1 : 0,
     };
   }
 
@@ -59,7 +72,9 @@ class Event implements CalendarItem{
       description: map['description'],
       from: DateTime.parse(map['from']),
       to: DateTime.parse(map['to']),
-      backgroundColor: Color(map['backgroundColor']),
+      idUser: map['idUser'],
+      isSynced: map['isSynced'] == 1,
+      isDelete: map['isDelete'] == 1,
     );
   }
 }

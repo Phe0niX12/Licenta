@@ -144,8 +144,7 @@ const Emails = sequelize.define("Emails",{
 });
 const Tasks = sequelize.define("Tasks",{
     id:{
-        type:DataTypes.UUID,
-        defaultValue:Sequelize.UUIDV4,
+        type:DataTypes.STRING,
         validate:{
             notEmpty:true
         },
@@ -163,99 +162,13 @@ const Tasks = sequelize.define("Tasks",{
         allowNull:false,
 
     },
-    reminderDateTime:{
-        type:DataTypes.DATE,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
 });
 
-const VirtualWallets = sequelize.define("VirtualWallets",{
-    id:{
-        type:DataTypes.UUID,
-        defaultValue:Sequelize.UUIDV4,
-        validate:{
-            notEmpty:true
-        },
-        primaryKey:true
-    },
-    walletAddress:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    walletProvateKey:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    walletAddressIv:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    walletProvateKeyIv:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    
-})
-
-const Payments = sequelize.define("Payments",{
-    id:{
-        type:DataTypes.UUID,
-        defaultValue:Sequelize.UUIDV4,
-        validate:{
-            notEmpty:true
-        },
-        primaryKey:true
-    },
-    recipientAddress:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    amount:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    schedule:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    },
-    status:{
-        type:DataTypes.STRING,
-        allowNull:false,
-        validate:{
-            notEmpty:true
-        }
-    }
-})
 User.hasMany(Emails);
-User.hasOne(VirtualWallets);
 User.hasMany(Tasks);
-VirtualWallets.hasMany(Payments);
+
 
 sequelize.sync({force:false})
 
-module.exports = {User,Payments,VirtualWallets,Emails,Tasks,sequelize};
+module.exports = {User,Emails,Tasks,sequelize};
 

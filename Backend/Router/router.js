@@ -2,8 +2,6 @@ const express = require('express')
 const {sign_in, sign_up,authenticate} = require('../Controller/SignController.js');
 const {deleteTask,getOneTask,getAllTasksOfUser,createTask,updateTask} = require('../Controller/TaskController.js')
 const {createEmail,getAllEmails,getOneEmail,deleteEmail,updateEmail} = require('../Controller/EmailController.js');
-const {createVirtualWallet} = require('../Controller/WalletController.js');
-const {createTransporter} = require('../Models/Middleware.js')
 const router = express.Router();
 
 router.post('/sign_in', sign_in);
@@ -21,6 +19,15 @@ router.get('/email/:id',authenticate,getOneEmail);
 router.delete('/email/:id',authenticate,deleteEmail);
 router.put('/email/:id',authenticate,updateEmail);
 
-router.post('/wallet', authenticate,createVirtualWallet);
+router.get('/healthcheck', async(req,res) =>{
+    try{
+        console.log(29);
+        return res.status(200).send("Connection succesful");
+    }catch(err){
+        return res.status(500).send({err,message:"Unexpected error at connecting to server"});
+    }
+})
+
+
 module.exports = {router}
 

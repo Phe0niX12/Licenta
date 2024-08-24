@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_ui/database/database_helper.dart';
 import 'package:mobile_ui/model/mail.dart';
 import 'package:uuid/uuid.dart';
 import 'package:uuid/v4.dart';
 
 class MailProvider extends ChangeNotifier{
   final List<Mail> _mails = [];
+
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  MailProvider(){
+    loadMails();
+  }
 
   List<Mail> get mails => _mails;
 
@@ -27,22 +34,29 @@ class MailProvider extends ChangeNotifier{
 
   String get userPassword => _userPassword;
 
-  
+  Future<void> loadMails() async {
+    _mails.clear();
+    final mailList = await _databaseHelper.mails();
+    _mails.addAll(mailList);
+    notifyListeners();
+  }
 
-  void addMail(Mail mail){
-    
+  Future<void> addMail(Mail mail) async {
+    await _databaseHelper.insertMail(mail);
     _mails.add(mail);
     notifyListeners();
   }
 
-  void deleteMail(Mail mail){
-    _mails.removeWhere((element) => element == mail,);
+  Future<void> deleteMail(Mail mail) async {
+    await _databaseHelper.deleteMail(mail.id);
+    _mails.removeWhere((element) => element.id == mail.id);
     notifyListeners();
   }
 
-  void editMail(Mail newMail, Mail oldMail){
+  Future<void> editMail(Mail newMail, Mail oldMail) async {
+    await _databaseHelper.updateMail(newMail);
     final index = _mails.indexOf(oldMail);
-    _mails[index]= newMail;
+    _mails[index] = newMail;
     notifyListeners();
   }
 

@@ -1,12 +1,18 @@
-import 'dart:js_interop';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/database/database_helper.dart';
 import 'package:mobile_ui/model/event.dart';
+import 'package:mobile_ui/repository/event_repository.dart';
 
 class EventProvider extends ChangeNotifier{
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  final EventRepository _eventRepository;
+
   final List<Event> _events = [];
+  bool _isSyncing=false;
+
+  EventProvider(this._eventRepository){
+    _loadEvents();
+  }
 
   List<Event> get events => _events;
 
@@ -18,33 +24,63 @@ class EventProvider extends ChangeNotifier{
 
   List<Event> get eventsOfSelectedDate => _events;
 
-  Future<void> loadEvents() async{
+  Future<void> _loadEvents() async {
     _events.clear();
-    final eventList = await _databaseHelper.events();
+    final eventList = await _eventRepository.fetchLocalEvents(); // Load from DB
     _events.addAll(eventList);
     notifyListeners();
+    
   }
+
   Future<void> addEvenet(Event event)async{
-    await _databaseHelper.insertEvent(event);
+    await _eventRepository.addEvent(event);
     _events.add(event);
     notifyListeners();
+    _syncWithServer();
   }
 
-  Future<void> deleteEvent(Event event)async{
-    await _databaseHelper.deleteEvent(event.id);
-    _events.removeWhere((element) => element == event,);
+  Future<void> deleteEvent(Event event) async {
+    await _eventRepository.markEventAsDeleted(event.id); // Delete from DB
+    _events.removeWhere((element) => element.id == event.id);
     notifyListeners();
+    _syncWithServer();
   }
 
-  Future<void> editEvent(Event newEvent, Event oldEvent)async{
-    await _databaseHelper.updateEvent(
-      newEvent
-    );
-    final index = _events.indexOf(oldEvent);
-    _events[index]= newEvent;
+  Future<void> editEvent(Event newEvent, Event oldEvent) async {
+    await _eventRepository.markEventAsUpdated(newEvent.id);
+    await _eventRepository.updateEvent(newEvent); // Update in DB
+    final index = _events.indexWhere((event) => event.id == oldEvent.id);
+    if (index != -1) {
+      _events[index] = newEvent;
+      notifyListeners();
+      _syncWithServer();
+    }
+  }
+
+  Future<void> _syncWithServer() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      print('No internet connection. Sync deferred.');
+      return;
+    }
+
+    _isSyncing = true;
     notifyListeners();
-  }
 
+    try {
+      if (await _eventRepository.isServerReachable()) {
+        await _eventRepository.syncEvents();
+        await _loadEvents();
+      } else {
+        print('Server is not reachable. Sync deferred.');
+      }
+    } catch (e) {
+      print('Error during sync: $e');
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
 
 
 }

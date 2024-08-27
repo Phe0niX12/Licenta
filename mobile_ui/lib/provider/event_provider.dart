@@ -26,10 +26,15 @@ class EventProvider extends ChangeNotifier{
 
   Future<void> _loadEvents() async {
     _events.clear();
-    final eventList = await _eventRepository.fetchLocalEvents(); // Load from DB
-    _events.addAll(eventList);
-    notifyListeners();
-    
+    final eventList = await _eventRepository.fetchLocalEvents();
+    if(eventList.isEmpty){
+      final eventsServer = await _eventRepository.fetchRemoteEvents();
+      _events.addAll(eventsServer);
+      notifyListeners();
+    }else{// Load from DB
+      _events.addAll(eventList);
+      notifyListeners();
+    }
   }
 
   Future<void> addEvenet(Event event)async{

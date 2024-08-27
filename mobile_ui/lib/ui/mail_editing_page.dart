@@ -1,9 +1,9 @@
-import 'dart:math';
 
-import 'package:flutter/gestures.dart';
+
+
 import 'package:flutter/material.dart';
 import 'package:mobile_ui/model/mail.dart';
-import 'package:mobile_ui/ui/event_editing_pange.dart';
+
 import 'package:mobile_ui/utils/utils.dart';
 import 'package:mobile_ui/widget/login_widget.dart';
 
@@ -83,16 +83,47 @@ class _MailEditingPageState extends State<MailEditingPage> {
     ElevatedButton.icon( 
       onPressed: () {
         if(_formKey.currentState!.validate()){
-        showModalBottomSheet(context: context,
-        builder: (context)  {
-          if(widget.mail != null){
-            return LoginMailWidget(mail:widget.mail, to:toController.text, cc: ccController.text, bcc: bccController.text, subject: subjectController.text, content: contentController.text, dateAndTimeSend: dateAndTimeSend,dateAndTimeReminder: dateAndTimeReminder,id:id);
-          }else{
-            return  LoginMailWidget(to:toController.text, cc: ccController.text, bcc: bccController.text, subject: subjectController.text, content: contentController.text, dateAndTimeSend: dateAndTimeSend,dateAndTimeReminder: dateAndTimeReminder,id:id);
-          }
-          }
-        ).then((_) => Navigator.of(context).pop()); 
-        
+        showModalBottomSheet(
+  isScrollControlled: true,
+  backgroundColor: Colors.transparent, // Make background transparent
+  context: context,
+  builder: (context) {
+    return FractionallySizedBox(
+      heightFactor: 0.8, // Adjust this value to control the height from the top
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white, // Modal background color
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(20), // Rounded corners at the top
+          ),
+        ),
+        child: widget.mail != null
+            ? LoginMailWidget(
+                mail: widget.mail,
+                to: toController.text,
+                cc: ccController.text,
+                bcc: bccController.text,
+                subject: subjectController.text,
+                content: contentController.text,
+                dateAndTimeSend: dateAndTimeSend,
+                dateAndTimeReminder: dateAndTimeReminder,
+                id: id,
+              )
+            : LoginMailWidget(
+                to: toController.text,
+                cc: ccController.text,
+                bcc: bccController.text,
+                subject: subjectController.text,
+                content: contentController.text,
+                dateAndTimeSend: dateAndTimeSend,
+                dateAndTimeReminder: dateAndTimeReminder,
+                id: id,
+              ),
+      ),
+    );
+  },
+).then((_) => Navigator.of(context).pop());
+
         }
       },
       style: ElevatedButton.styleFrom(

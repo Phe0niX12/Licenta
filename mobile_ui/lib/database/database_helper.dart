@@ -121,6 +121,7 @@ class DatabaseHelper {
    Future<List<Event>> getUnsyncedEvents() async {
     final db = await database;
     final result = await db.query('events', where: 'isSynced = ?', whereArgs: [0]);
+    final res = result.map((e) => Event.fromMap(e)).toList();
     return result.map((e) => Event.fromMap(e)).toList();
   }
 
@@ -148,5 +149,37 @@ class DatabaseHelper {
   Future<void> markEventAsDeleted(String id) async {
     final db = await database;
     await db.update('events', {'isDelete': 1}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Mail>> getUnsyncedMails() async {
+    final db = await database;
+    final result = await db.query('mails', where: 'isSynced = ?', whereArgs: [0]);
+    return result.map((e) => Mail.fromMap(e)).toList();
+  }
+
+   Future<List<Mail>> getUpdatedMails() async {
+    final db = await database;
+    final result = await db.query('mails', where: 'isUpdated = ?', whereArgs: [1]);
+    return result.map((e) => Mail.fromMap(e)).toList();
+  }
+
+  Future<List<Mail>> getDeletedMails() async {
+    final db = await database;
+    final result = await db.query('mails', where: 'isDelete = ?', whereArgs: [1]);
+    return result.map((e) => Mail.fromMap(e)).toList();
+  }
+
+  Future<void> markMailsAsSynced(String id) async {
+    final db = await database;
+    await db.update('mails', {'isSynced': 1}, where: 'id = ?', whereArgs: [id]);
+  }
+  Future<void> markMailAsUpdated(String id) async {
+    final db = await database;
+    await db.update('mails', {'isUpdated': 1}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> markMailAsDeleted(String id) async {
+    final db = await database;
+    await db.update('mails', {'isDelete': 1}, where: 'id = ?', whereArgs: [id]);
   }
 }

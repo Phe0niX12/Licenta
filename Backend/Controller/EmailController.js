@@ -1,15 +1,19 @@
 const {v4:uuidv4} = require('uuid');
 const {Emails} = require('../Models/SequlizerModel');
 const nodemailer = require('nodemailer');
-const cron = require('node-cron')
+const cron = require('node-cron');
+const { encrypt } = require('../utils/encryption');
 const createEmail = async(req,res) =>{
     try{
-        const id = uuidv4();
+        
+       
         send = false;
         reminderSend = false;
         responseReceived = false;
         const userid = req.userid
-        const newEmail = {id:id, ...req.body,send,reminderSend,responseReceived, UserId:userid};
+        const password = req.userPassword
+        const passwordEncoded = encrypt(password)
+        const newEmail = {...req.body,send:send,remidenrSend:reminderSend,responseReceived:responseReceived, UserId:userid};
         const email = await Emails.create(newEmail);
         const username = req.username
         return res.status(200).json({email: email, message:`Email send added succesfully to user ${username}`});

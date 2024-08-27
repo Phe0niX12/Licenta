@@ -1,5 +1,5 @@
 const {Tasks} =require('../Models/SequlizerModel')
-const {v4:uuidv4} = require('uuid')
+
 
 
 const getAllTasksOfUser = async(req,res) =>{
@@ -15,9 +15,9 @@ const getAllTasksOfUser = async(req,res) =>{
     if(!tasks){
         return res.status(404).send('No tasks assigned to the user');
     }
-
+    console.log(tasks);
     return res.status(200).json(tasks);
-
+    
     }catch(err){
         console.error('Unexprected error at getting tasks')
         return res.status(500).send('Unexprected error at getting tasks')
@@ -29,11 +29,11 @@ const getAllTasksOfUser = async(req,res) =>{
 const createTask = async(req,res)=>{
     try{
 
-        const {id,title,description} = req.body;
+        const {id,title,description,to,from} = req.body;
         const userid = req.user.id;
-        const newTask = {id:id, name:title,description:description, UserId:userid};  
-        const task = await Tasks.create(newTask);
+        const newTask = {id:id, title:title,description:description, UserId:userid, to:to, from:from};  
         
+        const task = await Tasks.create(newTask);
         
         return res.status(200).send({task: task, message:`Task added succesfully`});
         
@@ -45,9 +45,9 @@ const createTask = async(req,res)=>{
 const updateTask = async(req,res) =>{
     try{
         const id = req.params.id
-        const {title, description} = req.body;
+        const {title, description, to, from} = req.body;
         
-        const updateTask = {name:title, description:description};
+        const updateTask = {title:title, description:description, to:to, from:from};
         const task = await Tasks.findByPk(id);
         
         if(!task){

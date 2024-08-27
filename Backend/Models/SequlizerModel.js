@@ -4,7 +4,6 @@ require("dotenv").config;
 
 const { Sequelize,DataTypes} = require("sequelize");
 
-
 const sequelize = new Sequelize(process.env.DB_NAME, 'root',process.env.DB_PASSWORD,{
     host:process.env.DB_HOST,
     dialect:'mysql',
@@ -142,6 +141,8 @@ const Emails = sequelize.define("Emails",{
         allowNull:false
     }
 });
+
+
 const Tasks = sequelize.define("Tasks",{
     id:{
         type:DataTypes.STRING,
@@ -150,7 +151,7 @@ const Tasks = sequelize.define("Tasks",{
         },
         primaryKey:true
     },
-    name:{
+    title:{
         type:DataTypes.STRING,
         allowNull:false,
         validate:{
@@ -162,11 +163,18 @@ const Tasks = sequelize.define("Tasks",{
         allowNull:false,
 
     },
+    from:{
+        type:DataTypes.DATE,
+        allowNull:false
+    },
+    to:{
+        type:DataTypes.DATE,
+        allowNull:false
+    }
 });
 
 User.hasMany(Emails);
 User.hasMany(Tasks);
-
 
 sequelize.sync({force:false})
 

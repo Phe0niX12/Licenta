@@ -62,6 +62,7 @@ class Event implements CalendarItem{
       'idUser': idUser,
       'isSynced': isSynced ? 1 : 0,
       'isDelete': isDelete? 1 : 0,
+      'isUpdated': isUpdated? 1 :0
     };
   }
 
@@ -73,8 +74,9 @@ class Event implements CalendarItem{
       from: DateTime.parse(map['from']),
       to: DateTime.parse(map['to']),
       idUser: map['idUser'],
-      isSynced: map['isSynced'] == 1,
-      isDelete: map['isDelete'] == 1,
+      isSynced: true,
+      isDelete: false,
+      isUpdated: false
     );
   }
 }

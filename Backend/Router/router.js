@@ -9,7 +9,7 @@ router.post('/sign_up', sign_up);
 
 router.get('/tasks',authenticate,getAllTasksOfUser);
 router.post('/task',authenticate,createTask);
-router.put('/task/:id', authenticate, updateTask);
+router.put('/task/:oldId', authenticate, updateTask);
 router.get('/task/:id',authenticate,getOneTask);
 router.delete('/task/:id',authenticate,deleteTask);
 

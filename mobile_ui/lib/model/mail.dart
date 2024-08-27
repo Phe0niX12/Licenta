@@ -14,6 +14,11 @@ class Mail implements CalendarItem {
   final String bcc;
   final String id;
   final DateTime dateAndTimeReminder;
+  final String idUser;
+  bool isSynced;
+  bool isDelete;
+  bool isUpdated;
+
 
   Mail({
     required this.subject,
@@ -26,9 +31,11 @@ class Mail implements CalendarItem {
     required this.bcc,
     required this.id,
     required this.dateAndTimeReminder,
-
+    required this.idUser,
     this.backgroundColor = const Color.fromARGB(255, 104, 8, 93),
-
+    this.isSynced = false,
+    this.isDelete = false,
+    this.isUpdated = false,
      });
      
   @override
@@ -59,11 +66,14 @@ class Mail implements CalendarItem {
       'userEmail': userEmail,
       'userPassword': userPassword,
       'to': to,
-      'backgroundColor': backgroundColor.value,
       'dateAndTimeSend': dateAndTimeSend.toIso8601String(),
       'cc': cc,
       'bcc': bcc,
       'dateAndTimeReminder': dateAndTimeReminder.toIso8601String(),
+      'idUser':idUser,
+      'isSynced': isSynced ? 1 : 0,
+      'isDelete': isDelete? 1 : 0,
+      'isUpdated': isUpdated? 1 :0
     };
   }
   factory Mail.fromMap(Map<String, dynamic> map) {
@@ -73,12 +83,15 @@ class Mail implements CalendarItem {
       userEmail: map['userEmail'],
       userPassword: map['userPassword'],
       to: map['to'],
-      backgroundColor: Color(map['backgroundColor']),
       dateAndTimeSend: DateTime.parse(map['dateAndTimeSend']),
       cc: map['cc'],
       bcc: map['bcc'],
       id: map['id'],
       dateAndTimeReminder: DateTime.parse(map['dateAndTimeReminder']),
+      idUser: map['idUser'],
+      isSynced: map['isSynced'] == 1,
+      isDelete: map['isDelete'] == 1,
+      isUpdated: map['isUpdated'] == 1
     );
   }
   

@@ -7,8 +7,12 @@ const {decypt} = require('./utils/encryption.js');
 const {router} = require('./Router/router.js');
 const {Emails, sequelize} = require('./Models/SequlizerModel.js');
 const { Sequelize } = require('sequelize');
+const fs = require('fs');
+const plantuml = require('node-plantuml')
 
 
+var gen = plantuml.generate();
+// gen.out.pipe(fs.createWriteStream("output-file.png"))
 const app = express();
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(bodyParser.json());
@@ -16,7 +20,9 @@ app.use(router);
 
 
 cron.schedule('* * * * *', async() =>{
-    const now = new Date();
+    const currentUTC = new Date();
+    const offset = 180;
+    const now = new Date(currentUTC.getTime() + offset * 60000);
     const emails = await Emails.findAll({where: {send:false, dateAndTimeSend: {[Sequelize.Op.lte]:now}}});
     console.log(emails);
     emails.forEach(async (email) =>{
@@ -51,8 +57,10 @@ cron.schedule('* * * * *', async() =>{
 });
 
 cron.schedule('* * * * *', async ()=>{
-    const now = new Date();
-    const emails = await Emails.findAll({where:{send:true, responseReceived:false, reminderSend:false, dateAndTimeReminder: {[Sequelize.Op.lte]:now}}});
+    const currentUTC = new Date();
+    const offset = 180;
+    const now = new Date(currentUTC.getTime() + offset * 60000);
+    const emails = await Emails.findAll({where:{send:1, responseReceived:0, reminderSend:0, dateAndTimeReminder: {[Sequelize.Op.lte]:now}}});
     console.log(emails);
     emails.forEach(async (email) => {
         const decryptedPassword = email.userPassword;
